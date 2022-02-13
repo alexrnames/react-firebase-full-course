@@ -2,9 +2,9 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, Timestamp  } from "firebase/firestore";
 import { getStorage } from 'firebase/storage';
-
+import { collection, query, where, limit, getDocs, getDoc } from 'firebase/firestore';
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -27,4 +27,22 @@ export const firestore = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 export const storage = getStorage(app);
 export default app;
-// export const storage = firebase.storage();
+
+export async function getUserWithUsername(username) {
+  const usersRef = collection(firestore, 'users');
+  const q = query(usersRef, where('username', '==', username), limit(1));
+  const userDocument = (await getDocs(q)).docs[0];
+  
+  return userDocument;
+}
+
+export function postToJSON(doc) {
+  const data = doc.data();
+  return ({
+    ...data,
+    createdAt: data.createdAt.toMillis(),
+    updatedAt: data.updatedAt.toMillis(),
+  });
+}
+
+export const fromMillis = Timestamp.fromMillis;
